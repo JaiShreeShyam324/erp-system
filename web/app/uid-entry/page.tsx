@@ -3,13 +3,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 export default function UidEntryPage() {
-  const searchParams = useSearchParams();
-  const initialUid = searchParams.get('uid') || '';
-
-  const [uid, setUid] = useState(initialUid);
+  const [uid, setUid] = useState('');
   const [machineNumber, setMachineNumber] = useState('');
   const [message, setMessage] = useState('');
   const [list, setList] = useState<any[]>([]);
@@ -31,11 +27,14 @@ export default function UidEntryPage() {
 
   useEffect(() => {
     fetchList();
-  }, []);
 
-  useEffect(() => {
-    if (initialUid) handleSearch(initialUid);
-  }, [initialUid]);
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get('uid') || '';
+
+    if (value) {
+      handleSearch(value);
+    }
+  }, []);
 
   const handleSearch = async (value: string) => {
     setUid(value);
@@ -107,7 +106,6 @@ export default function UidEntryPage() {
         <h1 className="text-2xl font-bold mt-2 mb-6">UID Entry</h1>
 
         <input className="w-full border rounded-lg px-4 py-2 mb-4" placeholder="Enter UID" value={uid} onChange={(e) => handleSearch(e.target.value)} />
-
         <input className="w-full border rounded-lg px-4 py-2 mb-4" placeholder="Machine Number" value={machineNumber} onChange={(e) => setMachineNumber(e.target.value)} />
 
         <button onClick={saveEntry} className="bg-black text-white px-4 py-2 rounded-lg">
