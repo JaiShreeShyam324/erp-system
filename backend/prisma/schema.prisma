@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  parties   Party[]
+  ledger    Ledger[]
+  products Product[]
+  stock    Stock[]
+  orders Order[]
+  uidMachineEntries   UidMachineEntry[]
+  barcodeCheckEntries BarcodeCheckEntry[]
+
+  @@map("companies")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(STAFF)
+  isActive  Boolean  @default(true)
+  companyId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  @@map("users")
+}
+
+model Party {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  companyId Int
+  createdAt DateTime @default(now())
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  ledger    Ledger[]
+
+  @@map("parties")
+}
+
+model Ledger {
+  id        Int      @id @default(autoincrement())
+  partyId   Int
+  amount    Float
+  type      String
+  companyId Int
+  createdAt DateTime @default(now())
+
+  party     Party    @relation(fields: [partyId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  @@map("ledger")
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  design    String?
+  companyId Int
+  createdAt DateTime @default(now())
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  stock     Stock[]
+  orders Order[]
+
+  @@map("products")
+}
+
+model Stock {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  quantity  Float
+  type      String   // IN / OUT
+  companyId Int
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  @@map("stock")
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  quantity  Float
+  soldQty   Float    @default(0)
+  companyId Int
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
+
+  @@map("orders")
+}
+
+model UidMachineEntry {
+  id            Int      @id @default(autoincrement())
+  uid           String
+  machineNumber String
+  companyId     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+
+  @@map("uid_machine_entries")
+}
+
+model BarcodeCheckEntry {
+  id            Int      @id @default(autoincrement())
+  barcode       String
+  checkingDate  DateTime
+  checkingRemark String?
+  checkerName   String
+  companyId     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+
+  @@map("barcode_check_entries")
+}
