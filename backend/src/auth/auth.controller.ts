@@ -7,32 +7,13 @@ import * as bcrypt from 'bcrypt';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('login')
-  login(@Body() body: any) {
-    console.log('LOGIN BODY =>', body);
-
-    if (!body) {
-      return { message: 'Body not received' };
-    }
-
-    return this.authService.login(body.email, body.password);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Req() req: any) {
-    return {
-      message: 'Protected route working',
-      user: req.user,
-    };
-  }
-
-  // ✅ TEMP SEED ROUTE
+  // ✅ SEED (NO GUARD)
   @Get('seed')
   async seed() {
+    const prisma = (this.authService as any).prisma;
     const hash = await bcrypt.hash('123456', 10);
 
-    await this.authService['prisma'].company.upsert({
+    await prisma.company.upsert({
       where: { code: 'DEMO' },
       update: {},
       create: {
@@ -41,7 +22,7 @@ export class AuthController {
       },
     });
 
-    await this.authService['prisma'].user.upsert({
+    await prisma.user.upsert({
       where: { email: 'erpdemo@test.com' },
       update: { password: hash },
       create: {
@@ -55,5 +36,26 @@ export class AuthController {
     });
 
     return { message: 'Seed data inserted' };
+  }
+
+  @Post('login')
+  login(@Body() body: any) {
+    console.log('LOGIN BODY =>', body);
+
+    if (!body) {
+      return { message: 'Body not received' };
+    }
+
+    return this.authService.login(body.email, body.password);
+  }
+
+  // ❌ GUARD ONLY HERE
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Req() req: any) {
+    return {
+      message: 'Protected route working',
+      user: req.user,
+    };
   }
 }
