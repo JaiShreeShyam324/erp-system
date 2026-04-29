@@ -1,15 +1,13 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 export default function BarcodeEntryPage() {
-  const searchParams = useSearchParams();
-  const initialBarcode = searchParams.get('barcode') || '';
-
-  const [barcode, setBarcode] = useState(initialBarcode);
+  const [barcode, setBarcode] = useState('');
   const [checkingDate, setCheckingDate] = useState(new Date().toISOString().split('T')[0]);
   const [checkingRemark, setCheckingRemark] = useState('');
   const [checkerName, setCheckerName] = useState('Narayan');
@@ -33,11 +31,14 @@ export default function BarcodeEntryPage() {
 
   useEffect(() => {
     fetchList();
-  }, []);
 
-  useEffect(() => {
-    if (initialBarcode) handleSearch(initialBarcode);
-  }, [initialBarcode]);
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get('barcode') || '';
+
+    if (value) {
+      handleSearch(value);
+    }
+  }, []);
 
   const handleSearch = async (value: string) => {
     setBarcode(value);
@@ -112,13 +113,33 @@ export default function BarcodeEntryPage() {
 
         <h1 className="text-2xl font-bold mt-2 mb-6">Barcode Entry</h1>
 
-        <input className="w-full border rounded-lg px-4 py-2 mb-4" placeholder="Enter Barcode" value={barcode} onChange={(e) => handleSearch(e.target.value)} />
+        <input
+          className="w-full border rounded-lg px-4 py-2 mb-4"
+          placeholder="Enter Barcode"
+          value={barcode}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
 
-        <input className="w-full border rounded-lg px-4 py-2 mb-4" type="date" value={checkingDate} onChange={(e) => setCheckingDate(e.target.value)} />
+        <input
+          className="w-full border rounded-lg px-4 py-2 mb-4"
+          type="date"
+          value={checkingDate}
+          onChange={(e) => setCheckingDate(e.target.value)}
+        />
 
-        <input className="w-full border rounded-lg px-4 py-2 mb-4" placeholder="Checking Remark" value={checkingRemark} onChange={(e) => setCheckingRemark(e.target.value)} />
+        <input
+          className="w-full border rounded-lg px-4 py-2 mb-4"
+          placeholder="Checking Remark"
+          value={checkingRemark}
+          onChange={(e) => setCheckingRemark(e.target.value)}
+        />
 
-        <input className="w-full border rounded-lg px-4 py-2 mb-4" placeholder="Checker Name" value={checkerName} onChange={(e) => setCheckerName(e.target.value)} />
+        <input
+          className="w-full border rounded-lg px-4 py-2 mb-4"
+          placeholder="Checker Name"
+          value={checkerName}
+          onChange={(e) => setCheckerName(e.target.value)}
+        />
 
         <button onClick={saveEntry} className="bg-black text-white px-4 py-2 rounded-lg">
           Save
@@ -150,7 +171,10 @@ export default function BarcodeEntryPage() {
                     <td className="border p-2">{item.checkerName}</td>
                     <td className="border p-2">{item.checkingRemark || '-'}</td>
                     <td className="border p-2">
-                      <button onClick={() => handleDelete(item.id)} className="bg-red-500 text-white px-3 py-1 rounded">
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded"
+                      >
                         Delete
                       </button>
                     </td>
